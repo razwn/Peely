@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
-from embedding_utils import get_embedding_model
+from utils.embedding_utils import get_embedding_model
 
 load_dotenv()
 
