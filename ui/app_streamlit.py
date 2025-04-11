@@ -1,19 +1,21 @@
+import os
 import streamlit as st
 import requests
 import uuid
 import time
-import json
+from dotenv import load_dotenv
 from datetime import datetime
 
-# Configuration
-# Update with your API URL
-API_URL = "https://3o4zk1nlhg.execute-api.us-east-1.amazonaws.com/prod"
+
+load_dotenv()
+
+
+API_URL = os.environ.get("AGW_API_URL")
 HEADERS = {
     "Content-Type": "application/json",
-    "X-Api-Key": "iAA8smqAS0aOg3MftZvkU2q62xrq5MRC5dQia4Vm"
+    "X-Api-Key": os.environ.get("AGW_API_KEY")
 }
 
-# Set page configuration
 st.set_page_config(
     page_title="Peely Chatbot",
     page_icon="🤖",
@@ -65,8 +67,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Function to create a new conversation
-
 
 def create_conversation():
     try:
@@ -81,8 +81,6 @@ def create_conversation():
         st.error(f"Error connecting to API: {str(e)}")
         # Fallback to using a generated UUID
         return str(uuid.uuid4())
-
-# Function to send a message and get a response
 
 
 def send_message(conversation_id, message):
@@ -109,8 +107,6 @@ def send_message(conversation_id, message):
         st.error(f"Error connecting to API: {str(e)}")
         return None
 
-# Function to get all conversations
-
 
 def get_conversations():
     try:
@@ -124,8 +120,6 @@ def get_conversations():
         st.error(f"Error connecting to API: {str(e)}")
         return []
 
-# Function to load a conversation
-
 
 def load_conversation(conversation_id):
     try:
@@ -138,8 +132,6 @@ def load_conversation(conversation_id):
     except Exception as e:
         st.error(f"Error connecting to API: {str(e)}")
         return []
-
-# Function to format timestamp
 
 
 def format_timestamp(timestamp):
@@ -218,10 +210,13 @@ chat_container = st.container()
 with chat_container:
     col1, col2 = st.columns([3, 1])
     with col1:
-        st.subheader(f"Conversation with Peely")
+        st.subheader("Conversation with Peely")
     with col2:
         st.markdown(
-            f"<div class='timestamp'>ID: {st.session_state.conversation_id[:8]}...</div>", unsafe_allow_html=True)
+            f"<div class='timestamp'>"
+            f"ID: {st.session_state.conversation_id[:8]}..."
+            f"</div>",
+            unsafe_allow_html=True)
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
@@ -315,9 +310,9 @@ st.markdown("---")
 st.markdown(
     """
     <div style="text-align: center; color: #888; font-size: 0.8em;">
-        Powered by AWS Bedrock, Lambda, and Pinecone | 
-        Built with Streamlit | 
-        © 2025 Peely Chatbot
+        Powered by AWS Bedrock, Lambda, and Pinecone |
+         Built with Streamlit |
+         © 2025 Peely Chatbot
     </div>
     """,
     unsafe_allow_html=True

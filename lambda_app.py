@@ -3,13 +3,14 @@ import os
 import time
 import boto3
 import uuid
+from dotenv import load_dotenv
 from utils.pinecone_utils import get_pinecone_index
 from utils.bedrock_utils import get_bedrock_llm
 from utils.dynamodb_utils import save_conversation, get_conversation_history
 from utils.embedding_utils import get_embedding_model
 from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-from langchain.schema import BaseMessage, HumanMessage, AIMessage
+from langchain.schema import HumanMessage, AIMessage
 from aws_lambda_powertools.event_handler import APIGatewayRestResolver
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools.logging import Logger
@@ -17,8 +18,8 @@ from aws_lambda_powertools.event_handler.exceptions import (
     BadRequestError, InternalServerError
 )
 
-# Initialize logger
 logger = Logger()
+load_dotenv()
 
 # Initialize API Gateway resolver
 app = APIGatewayRestResolver()
@@ -38,8 +39,8 @@ try:
     logger.info("Embedding model initialized successfully")
 
     logger.info("Initializing Bedrock LLM...")
-    llm = get_bedrock_llm()
-    logger.info("Bedrock LLM initialized successfully")
+    llm = get_bedrock_llm(model_name=os.environ.get('CHOSEN_MODEL'))
+    logger.info("Bedrock LLM model initialized successfully")
 
     # Create vector store
     logger.info("Creating vector store retriever...")

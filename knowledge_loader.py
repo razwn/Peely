@@ -4,7 +4,6 @@ import argparse
 from langchain.document_loaders import WebBaseLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from utils.pinecone_utils import get_pinecone_index
-from utils.embedding_utils import get_embedding_model
 
 
 def load_sources_config(config_path):
@@ -38,7 +37,10 @@ def load_website(source_config):
 
         for doc in documents:
             # Check if the document URL contains any blacklisted strings
-            if not any(blacklist_item in doc.metadata.get('source', '') for blacklist_item in blacklist):
+            if not any(
+                blacklist_item in doc.metadata.get('source', '')
+                for blacklist_item in blacklist
+            ):
                 filtered_docs.append(doc)
 
         documents = filtered_docs
@@ -63,7 +65,7 @@ def load_directory(source_config):
         return []
 
     # Check directory contents
-    print(f"Directory contents:")
+    print("Directory contents:")
     for item in os.listdir(location):
         item_path = os.path.join(location, item)
         if os.path.isfile(item_path):
@@ -133,7 +135,8 @@ def main():
         all_chunks.extend(chunks)
 
         print(
-            f"Loaded {len(documents)} documents, created {len(chunks)} chunks from {source['name']}")
+            f"Loaded {len(documents)} documents, created {len(chunks)} chunks from {source['name']}"
+        )
 
     # Upload chunks to Pinecone
     print(f"Uploading {len(all_chunks)} chunks to Pinecone...")
@@ -148,7 +151,7 @@ def main():
     # Batch upload in groups of 100
     batch_size = 100
     for i in range(0, len(all_chunks), batch_size):
-        batch = all_chunks[i:i+batch_size]
+        batch = all_chunks[i:i + batch_size]
 
         # Using the from_documents method which handles the embedding process internally
         if i == 0:  # Only for the first batch, use from_documents to create the index
@@ -160,7 +163,11 @@ def main():
                 # Add the texts directly
                 pinecone_index.add_texts(texts=texts, metadatas=metadatas)
                 print(
-                    f"Uploaded batch {i//batch_size + 1}/{(len(all_chunks) + batch_size - 1)//batch_size}")
+                    (
+                        f"Uploaded batch {i // batch_size + 1}/"
+                        f"{(len(all_chunks) + batch_size - 1) // batch_size}"
+                    )
+                )
             except Exception as e:
                 print(f"Error uploading batch: {str(e)}")
                 raise
@@ -172,7 +179,9 @@ def main():
             # Add the texts directly
             pinecone_index.add_texts(texts=texts, metadatas=metadatas)
             print(
-                f"Uploaded batch {i//batch_size + 1}/{(len(all_chunks) + batch_size - 1)//batch_size}")
+                f"Uploaded batch {i // batch_size + 1}/"
+                f"{(len(all_chunks) + batch_size - 1) // batch_size}"
+            )
 
     print("Knowledge base loading complete!")
 

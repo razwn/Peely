@@ -1,7 +1,10 @@
 import os
+from dotenv import load_dotenv
 from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from utils.embedding_utils import get_embedding_model
+
+load_dotenv()
 
 
 def get_pinecone_index():

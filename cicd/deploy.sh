@@ -44,8 +44,5 @@ echo "Deploying infrastructure with CDK..."
 cdk deploy --require-approval never
 
 echo "=== Deployment complete ==="
-echo ""
-echo "API URL: https://3o4zk1nlhg.execute-api.us-east-1.amazonaws.com/prod"
-echo ""
 echo "Don't forget to load your knowledge base:"
 echo "python knowledge_loader.py --config content_sources.json"
