@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
-from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
-from utils.embedding_utils import get_embedding_model
+from pinecone import Pinecone, ServerlessSpec
+from embedding_utils import get_embedding_model
 
 load_dotenv()
 
@@ -24,8 +24,12 @@ def get_pinecone_index():
         # Create index
         pc.create_index(
             name=index_name,
-            dimension=1536,  # For OpenAI ada-002 embeddings
-            metric="cosine"
+            dimension=1024,  # Vector dimension for amazon titan-embed-text-v2
+            metric="cosine",
+            spec=ServerlessSpec(
+                cloud='aws',
+                region='us-east-1',
+            )
         )
 
     # Get the index object

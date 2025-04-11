@@ -3,7 +3,7 @@ import os
 import argparse
 from langchain.document_loaders import WebBaseLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from utils.pinecone_utils import get_pinecone_index
+from pinecone_utils import get_pinecone_index
 
 
 def load_sources_config(config_path):

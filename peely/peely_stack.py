@@ -38,9 +38,12 @@ class PeelyChatbotStack(Stack):
             "PINECONE_API_KEY": os.environ.get('PINECONE_API_KEY'),
             "PINECONE_INDEX_NAME": os.environ.get('PINECONE_INDEX_NAME'),
             "OPENAI_API_KEY": os.environ.get('OPENAI_API_KEY'),
-            "AWS_BEDROCK_REGION": os.environ.get('AWS_BEDROCK_REGION'),
+            "AWS_CHOSEN_REGION": os.environ.get('AWS_CHOSEN_REGION'),
             "BEDROCK_INFERENCE_PROFILE_ARN": os.environ.get('BEDROCK_INFERENCE_PROFILE_ARN'),
             "BEDROCK_MISTRAL_MODEL_ID": os.environ.get('BEDROCK_MISTRAL_MODEL_ID'),
+            "BEDROCK_EMBEDDING_MODEL_ID": os.environ.get(
+                'BEDROCK_EMBEDDING_MODEL_ID', 'amazon.titan-embed-text-v2:0'
+            ),
             "CONVERSATION_TABLE_NAME": conversation_table.table_name,
             "CHOSEN_MODEL": os.environ.get('CHOSEN_MODEL'),
         }
@@ -50,25 +53,53 @@ class PeelyChatbotStack(Stack):
             self,
             "PeelyChatbotFunction",
             code=_lambda.DockerImageCode.from_image_asset("./chatbot_image"),
-            timeout=Duration.seconds(60),
-            memory_size=512,
+            timeout=Duration.seconds(120),
+            memory_size=1024,
             architecture=_lambda.Architecture.ARM_64,
             environment=environment_variables_dict
         )
 
-        # Add Bedrock permissions to Lambda role
         docker_function.add_to_role_policy(
             iam.PolicyStatement(
                 actions=[
                     "bedrock:InvokeModel",
                     "bedrock:InvokeModelWithResponseStream",
                     "bedrock:GetInferenceProfile",
-                    "bedrock:ListInferenceProfiles"
+                    "bedrock:ListInferenceProfiles",
+                    "bedrock:ListFoundationModels",
+                    "bedrock:GetFoundationModel"
                 ],
                 resources=["*"]
             )
         )
 
+        # Add explicit permissions for Bedrock runtime
+        docker_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "bedrock-runtime:InvokeModel",
+                    "bedrock-runtime:InvokeModelWithResponseStream"
+                ],
+                resources=["*"]
+            )
+        )
+
+        # Add explicit DynamoDB permissions
+        docker_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "dynamodb:Query",
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:Scan"
+                ],
+                resources=[conversation_table.table_arn]
+            )
+        )
+
+        # Also grant the standard read/write permissions as a fallback
         conversation_table.grant_read_write_data(docker_function)
 
         api = apigateway.RestApi(

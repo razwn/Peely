@@ -4,7 +4,7 @@ import boto3
 
 
 def get_bedrock_llm(model_name: str = "claude") -> ChatBedrock:
-    bedrock_region = os.environ.get('AWS_BEDROCK_REGION')
+    bedrock_region = os.environ.get('AWS_CHOSEN_REGION')
 
     bedrock_client = boto3.client(
         service_name='bedrock-runtime',
