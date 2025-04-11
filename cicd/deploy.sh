@@ -8,7 +8,7 @@ mkdir -p chatbot_image/utils
 
 # Copy files to Docker build directory
 echo "Copying files to build directory..."
-cp lambda_app.py chatbot_image/app.py  # Rename to avoid confusion with CDK app.py
+cp lambdas/universal_lambda.py chatbot_image/app.py  # Rename to avoid confusion with CDK app.py
 cp requirements.txt chatbot_image/
 cp -r utils/*.py chatbot_image/utils/
 
@@ -45,4 +45,4 @@ cdk deploy --require-approval never
 
 echo "=== Deployment complete ==="
 echo "Don't forget to load your knowledge base:"
-echo "python knowledge_loader.py --config content_sources.json"
+echo "python knowledge_loader.py --config utils/content_sources.json"
