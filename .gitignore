@@ -9,3 +9,6 @@ __pycache__
 .cdk.staging
 cdk.out
 .env
+chatbot_image
+.DS_Store
+.vscode

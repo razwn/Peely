@@ -40,6 +40,9 @@ class PeelyChatbotStack(Stack):
             "OPENAI_API_KEY": os.environ.get('OPENAI_API_KEY'),
             "AWS_BEDROCK_REGION": os.environ.get('AWS_BEDROCK_REGION'),
             "BEDROCK_INFERENCE_PROFILE_ARN": os.environ.get('BEDROCK_INFERENCE_PROFILE_ARN'),
+            "BEDROCK_MISTRAL_MODEL_ID": os.environ.get('BEDROCK_MISTRAL_MODEL_ID'),
+            "CONVERSATION_TABLE_NAME": conversation_table.table_name,
+            "CHOSEN_MODEL": os.environ.get('CHOSEN_MODEL'),
         }
 
         # Create Docker-based Lambda function
