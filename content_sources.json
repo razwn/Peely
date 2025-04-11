@@ -1,0 +1,11 @@
+{
+    "content_sources": [
+      {
+        "name": "Local Documentation",
+        "type": "Directory",
+        "location": "./docs",
+        "glob_pattern": "**/*.txt",
+        "chunk_size": 1024
+      }
+    ]
+}
