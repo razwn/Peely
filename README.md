@@ -4,9 +4,9 @@ This is the Serverless Framework implementation of the Peely chatbot.
 
 ## Prerequisites
 
-- Node.js (v20 or later)
+- Node.js (v20 or later, v20.9.0 used to develop)
 - npm
-- Python 3.12+
+- Python 3.11
 - AWS CLI configured with appropriate credentials
 - Serverless Framework (`npm install -g serverless`)
 
@@ -23,9 +23,6 @@ AWS_CHOSEN_REGION=us-east-1
 # Pinecone Configuration
 PINECONE_API_KEY=your_pinecone_api_key
 PINECONE_INDEX_NAME=peely-index
-PINECONE_USE_SERVERLESS=true
-PINECONE_CLOUD=aws
-PINECONE_REGION=us-east-1
 
 # AWS Bedrock Configuration
 BEDROCK_INFERENCE_PROFILE_ARN=arn:aws:bedrock:us-east-1::inference-profile/example-profile
@@ -48,14 +45,6 @@ chmod +x deploy.sh
 ```bash
 # Install dependencies
 npm install
-
-# Create lambdas directory structure
-mkdir -p lambdas/utils
-
-# Copy files
-cp universal_lambda.py lambdas/
-cp -r utils/* lambdas/utils/
-cp requirements.txt lambdas/
 
 # Deploy with Serverless Framework
 npx serverless deploy
