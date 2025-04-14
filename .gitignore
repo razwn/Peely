@@ -14,3 +14,4 @@ chatbot_image
 .vscode
 node_modules/
 .serverless/
+.vscode/
