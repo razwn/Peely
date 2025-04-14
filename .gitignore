@@ -12,3 +12,5 @@ cdk.out
 chatbot_image
 .DS_Store
 .vscode
+node_modules/
+.serverless/

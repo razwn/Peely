@@ -1,0 +1,143 @@
+service: peely-chatbot
+
+frameworkVersion: '3'
+useDotenv: true
+configValidationMode: warn
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  region: ${env:AWS_REGION, 'us-east-1'}
+  apiGateway:
+    apiKeys:
+      - name: PeelyChatbotApiKey
+        description: API Key for Peely Chatbot
+    usagePlan:
+      quota:
+        limit: 1000
+        period: MONTH
+      throttle:
+        burstLimit: 20
+        rateLimit: 10
+  environment:
+    CONVERSATION_TABLE_NAME: ${self:service}-${sls:stage}-conversations
+  iam:
+    role:
+      statements:
+        # Bedrock permissions
+        - Effect: Allow
+          Action:
+            - bedrock:InvokeModel
+            - bedrock:InvokeModelWithResponseStream
+            - bedrock:GetInferenceProfile
+            - bedrock:ListInferenceProfiles
+            - bedrock:ListFoundationModels
+            - bedrock:GetFoundationModel
+          Resource: "*"
+        # Bedrock runtime permissions
+        - Effect: Allow
+          Action:
+            - bedrock-runtime:InvokeModel
+            - bedrock-runtime:InvokeModelWithResponseStream
+          Resource: "*"
+        # DynamoDB permissions
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Scan
+          Resource:
+            - !GetAtt ConversationTable.Arn
+  ecr:
+    # Define the image here first
+    images:
+      peely_chatbot_image:
+        path: .
+        file: Dockerfile
+        buildArgs:
+          # Pass build arguments to Docker if needed
+        platform: linux/amd64
+
+functions:
+  UniversalLambdaFunction:
+    image: peely_chatbot_image 
+    timeout: 29
+    memorySize: 1024
+    environment:
+      # Environment variables for the container
+      PINECONE_API_KEY: ${env:PINECONE_API_KEY}
+      PINECONE_INDEX_NAME: ${env:PINECONE_INDEX_NAME}
+      PINECONE_USE_SERVERLESS: ${env:PINECONE_USE_SERVERLESS, 'true'}
+      PINECONE_CLOUD: ${env:PINECONE_CLOUD, 'aws'}
+      PINECONE_REGION: ${env:PINECONE_REGION, 'us-east-1'}
+      PINECONE_ENVIRONMENT: ${env:PINECONE_ENVIRONMENT, 'us-east1-gcp'}
+      PINECONE_POD_TYPE: ${env:PINECONE_POD_TYPE, 's1.x1'}
+      PINECONE_POD_COUNT: ${env:PINECONE_POD_COUNT, '1'}
+      OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}
+      AWS_CHOSEN_REGION: ${env:AWS_CHOSEN_REGION, 'us-east-1'}
+      BEDROCK_INFERENCE_PROFILE_ARN: ${env:BEDROCK_INFERENCE_PROFILE_ARN, ''}
+      BEDROCK_MISTRAL_MODEL_ID: ${env:BEDROCK_MISTRAL_MODEL_ID, ''}
+      BEDROCK_EMBEDDING_MODEL_ID: ${env:BEDROCK_EMBEDDING_MODEL_ID, 'amazon.titan-embed-text-v2:0'}
+      CHOSEN_MODEL: ${env:CHOSEN_MODEL, 'claude'}
+    events:
+      # Create conversation
+      - http:
+          path: /conversations
+          method: post
+          private: true
+      # List conversations
+      - http:
+          path: /conversations
+          method: get
+          private: true
+      # Get conversation
+      - http:
+          path: /conversations/{conversationId}
+          method: get
+          private: true
+      # Add message
+      - http:
+          path: /conversations/{conversationId}/messages
+          method: post
+          private: true
+      # Get messages
+      - http:
+          path: /conversations/{conversationId}/messages
+          method: get
+          private: true
+
+resources:
+  Resources:
+    ConversationTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CONVERSATION_TABLE_NAME}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: conversation_id
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: N
+        KeySchema:
+          - AttributeName: conversation_id
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+  
+  Outputs:
+    ApiUrl:
+      Description: "URL of the API Gateway endpoint"
+      Value: 
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:provider.region}.amazonaws.com/${sls:stage}"
+    TableName:
+      Description: "Name of the DynamoDB table"
+      Value: ${self:provider.environment.CONVERSATION_TABLE_NAME}

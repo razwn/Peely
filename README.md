@@ -1,62 +1,100 @@
+# Peely Chatbot - Serverless Framework Version
 
-# Welcome to your CDK Python project!
+This is the Serverless Framework implementation of the Peely chatbot.
 
-This is a blank project for CDK development with Python.
+## Prerequisites
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+- Node.js (v20 or later)
+- npm
+- Python 3.12+
+- AWS CLI configured with appropriate credentials
+- Serverless Framework (`npm install -g serverless`)
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
 
-To manually create a virtualenv on MacOS and Linux:
+## Environment Variables
 
-```
-$ python3 -m venv .venv
-```
-
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+Create a `.env` file with the following variables:
 
 ```
-$ source .venv/bin/activate
+# AWS Configuration
+AWS_REGION=us-east-1
+AWS_CHOSEN_REGION=us-east-1
+
+# Pinecone Configuration
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_INDEX_NAME=peely-index
+PINECONE_USE_SERVERLESS=true
+PINECONE_CLOUD=aws
+PINECONE_REGION=us-east-1
+
+# AWS Bedrock Configuration
+BEDROCK_INFERENCE_PROFILE_ARN=arn:aws:bedrock:us-east-1::inference-profile/example-profile
+BEDROCK_MISTRAL_MODEL_ID=mistral.mixtral-8x7b-instruct-v0:1
+BEDROCK_EMBEDDING_MODEL_ID=amazon.titan-embed-text-v2:0
+CHOSEN_MODEL=claude
 ```
 
-If you are a Windows platform, you would activate the virtualenv like this:
+## Deployment
 
-```
-% .venv\Scripts\activate.bat
-```
+### Option 1: Using the deployment script
 
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
+```bash
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-At this point you can now synthesize the CloudFormation template for this code.
+### Option 2: Manual deployment
 
+```bash
+# Install dependencies
+npm install
+
+# Create lambdas directory structure
+mkdir -p lambdas/utils
+
+# Copy files
+cp universal_lambda.py lambdas/
+cp -r utils/* lambdas/utils/
+cp requirements.txt lambdas/
+
+# Deploy with Serverless Framework
+npx serverless deploy
 ```
-$ cdk synth
+
+## Loading the Knowledge Base
+
+After deployment, load your knowledge base:
+
+```bash
+python knowledge_loader.py --config utils/content_sources.json
 ```
 
+## API Usage
+
+After deployment, Serverless Framework will output the API Gateway endpoint URL. You'll also need to retrieve the API key from the AWS Console (API Gateway > API Keys).
+
+### Example Usage
+
+```bash
+# Set environment variables for the Streamlit app
+export AGW_API_URL="https://your-api-id.execute-api.us-east-1.amazonaws.com/dev"
+export AGW_API_KEY="your-api-key-from-aws-console"
+
+# Run the Streamlit app
+streamlit run app_streamlit.py
 ```
-nvm use v20.9.0
+
+## Cleanup
+
+To remove all deployed resources:
+
+```bash
+chmod +x teardown.sh
+./teardown.sh
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+Or manually:
 
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+```bash
+npx serverless remove
+```

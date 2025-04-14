@@ -1,0 +1,25 @@
+{
+    "name": "peely-chatbot",
+    "version": "1.0.0",
+    "description": "Peely - A RAG-based AI chatbot using AWS Bedrock, Lambda, and Pinecone",
+    "main": "index.js",
+    "scripts": {
+      "deploy": "serverless deploy",
+      "remove": "serverless remove",
+      "logs": "serverless logs -f api"
+    },
+    "keywords": [
+      "chatbot",
+      "AI",
+      "AWS",
+      "Bedrock",
+      "Pinecone",
+      "RAG"
+    ],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "serverless": "^3.34.0",
+      "serverless-dotenv-plugin": "^6.0.0"
+    }
+}
